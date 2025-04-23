@@ -1,0 +1,121 @@
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+local plr = game.Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+
+local espToggle, infJump = false, false
+
+local ui = Rayfield:CreateWindow({
+   Name = "C5_Universal",
+   LoadingTitle = "Universal địt mẹ n",
+   LoadingSubtitle = "Đợi cái lồn mẹ m...",
+   ConfigurationSaving = { Enabled = false }
+})
+
+local main = ui:CreateTab("Main", 4483362458)
+local visual = ui:CreateTab("Visual", 4483362458)
+
+-- Infinite Jump toggle
+main:CreateToggle({
+   Name = "Infinite Jump",
+   CurrentValue = false,
+   Callback = function(v) infJump = v end
+})
+
+-- Infinite Jump fix cho mobile
+local debounce = false
+game:GetService("UserInputService").JumpRequest:Connect(function()
+   if infJump and not debounce and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+      debounce = true
+      plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+      task.delay(0.16, function() debounce = false end)
+   end
+end)
+
+-- Speed Hack Slider
+main:CreateSlider({
+   Name = "Speed Hack",
+   Range = {16, 200},
+   Increment = 1,
+   CurrentValue = 16,
+   Callback = function(v) 
+      if plr.Character:FindFirstChild("Humanoid") then
+         plr.Character.Humanoid.WalkSpeed = v
+      end
+   end
+})
+
+-- Jump Power Slider
+main:CreateSlider({
+   Name = "Jump Power",
+   Range = {50, 300},
+   Increment = 1,
+   CurrentValue = 50,
+   Callback = function(v) 
+      if plr.Character:FindFirstChild("Humanoid") then
+         plr.Character.Humanoid.JumpPower = v
+      end
+   end
+})
+
+-- Reset Character Button
+main:CreateButton({
+   Name = "Reset Character",
+   Callback = function() plr:LoadCharacter() end
+})
+
+-- No Anim Button
+main:CreateButton({
+   Name = "No Anim",
+   Callback = function()
+      for _, v in pairs(char:GetDescendants()) do
+         if v:IsA("Animator") or v:IsA("Animation") then v:Destroy() end
+      end
+   end
+})
+
+-- ESP Toggle
+visual:CreateToggle({
+   Name = "ESP Player",
+   CurrentValue = false,
+   Callback = function(v) espToggle = v end
+})
+
+-- ESP update
+task.spawn(function()
+   while true do
+      for _, player in pairs(game.Players:GetPlayers()) do
+         if espToggle and player ~= plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            if not player.Character:FindFirstChild("ESP_Box") then
+               local billboard = Instance.new("BillboardGui", player.Character)
+               billboard.Name = "ESP_Box"
+               billboard.Size = UDim2.new(0, 100, 0, 40)
+               billboard.AlwaysOnTop = true
+               billboard.Adornee = player.Character.HumanoidRootPart
+               local nameLabel = Instance.new("TextLabel", billboard)
+               nameLabel.Size = UDim2.new(1, 0, 1, 0)
+               nameLabel.BackgroundTransparency = 1
+               nameLabel.Text = player.Name
+               nameLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+               nameLabel.TextStrokeTransparency = 0
+               nameLabel.TextScaled = true
+               nameLabel.Font = Enum.Font.GothamBold
+            end
+         elseif not espToggle and player.Character and player.Character:FindFirstChild("ESP_Box") then
+            player.Character.ESP_Box:Destroy()
+         end
+      end
+      task.wait(1)
+   end
+end)
+
+-- Vòng lặp cập nhật WalkSpeed và JumpPower
+task.spawn(function()
+   while true do
+      if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+         local humanoid = plr.Character.Humanoid
+         humanoid.WalkSpeed = humanoid.WalkSpeed
+         humanoid.JumpPower = humanoid.JumpPower
+      end
+      task.wait(0.1)  -- Cập nhật sau mỗi 0.1 giây
+   end
+end)
